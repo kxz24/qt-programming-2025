@@ -9,7 +9,6 @@
 #include "../Items/Armors/FlamebreakerArmor.h"
 
 BattleScene::BattleScene(QObject *parent) : Scene(parent) {
-    // This is useful if you want the scene to have the exact same dimensions as the view
     setSceneRect(0, 0, 1280, 720);
     map = new Battlefield();
     character = new Link();
@@ -32,45 +31,39 @@ void BattleScene::processInput() {
 
 void BattleScene::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
-        case Qt::Key_A:
-            if (character != nullptr) {
-                character->setLeftDown(true);
-            }
-            break;
-        case Qt::Key_D:
-            if (character != nullptr) {
-                character->setRightDown(true);
-            }
-            break;
-        case Qt::Key_J:
-            if (character != nullptr) {
-                character->setPickDown(true);
-            }
-            break;
-        default:
-            Scene::keyPressEvent(event);
+    case Qt::Key_A:
+        if (character != nullptr) character->setLeftDown(true);
+        break;
+    case Qt::Key_D:
+        if (character != nullptr) character->setRightDown(true);
+        break;
+    case Qt::Key_S:
+        if (character != nullptr) character->setPickDown(true);
+        break;
+    case Qt::Key_W:
+        if (character != nullptr) character->setJumpDown(true);
+        break;
+    default:
+        Scene::keyPressEvent(event);
     }
 }
 
 void BattleScene::keyReleaseEvent(QKeyEvent *event) {
     switch (event->key()) {
-        case Qt::Key_A:
-            if (character != nullptr) {
-                character->setLeftDown(false);
-            }
-            break;
-        case Qt::Key_D:
-            if (character != nullptr) {
-                character->setRightDown(false);
-            }
-            break;
-        case Qt::Key_J:
-            if (character != nullptr) {
-                character->setPickDown(false);
-            }
-            break;
-        default:
-            Scene::keyReleaseEvent(event);
+    case Qt::Key_A:
+        if (character != nullptr) character->setLeftDown(false);
+        break;
+    case Qt::Key_D:
+        if (character != nullptr) character->setRightDown(false);
+        break;
+    case Qt::Key_S:
+        if (character != nullptr) character->setPickDown(false);
+        break;
+    case Qt::Key_W:
+        if (character != nullptr) character->setJumpDown(false);
+        break;
+    default:
+        Scene::keyReleaseEvent(event);
     }
 }
 
@@ -81,7 +74,10 @@ void BattleScene::update() {
 void BattleScene::processMovement() {
     Scene::processMovement();
     if (character != nullptr) {
-        character->setPos(character->pos() + character->getVelocity() * (double) deltaTime);
+        character->processMovement(
+            deltaTime,
+            map->getFloorHeight()
+            );
     }
 }
 
@@ -110,12 +106,10 @@ Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal 
             }
         }
     }
-
     return nearest;
 }
 
 Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountable) {
-    // Limitation: currently only supports armor
     if (auto armor = dynamic_cast<Armor *>(mountable)) {
         return character->pickupArmor(armor);
     }
